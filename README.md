@@ -14,7 +14,7 @@ VS2015-era. This repo replaces both with plain CMake. No MSYS2, MinGW or autotoo
 | Windows | 10 or 11, x64 | `curl.exe` and `tar.exe` ship with Windows |
 | PowerShell | 7+ | for `fetch-sources.ps1` |
 | Git | any recent | sources and version strings come from git |
-| CMake | 3.29+ | |
+| CMake | 4.4+ | `cmake_minimum_required(VERSION 4.4)`: policies stay at 4.4 behavior until that line is raised |
 | Ninja | any recent | |
 | LLVM | recent release | `clang`, `clang++`, `lld`, `llvm-ar`, `llvm-rc`; found via `%LLVMInstallDir%\bin` or `C:\Program Files\LLVM\bin` |
 | Visual Studio Build Tools | 2022 or newer | "Desktop development with C++" workload + a Windows SDK. clang uses its headers and libraries; no developer shell needed. |

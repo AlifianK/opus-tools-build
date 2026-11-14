@@ -2,7 +2,7 @@
 #   ogg, opus, opusfile/opusurl, flac  -> their own upstream CMake builds (add_subdirectory)
 #   libopusenc, opus-tools             -> autotools-only upstream, so built by targets defined here
 # Everything is compiled in this tree, so with -flto the final link optimizes across all of it.
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 4.4)
 
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # let option() in subprojects take the values set below
 project(opus-tools-build LANGUAGES C)
