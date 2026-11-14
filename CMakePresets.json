@@ -1,0 +1,30 @@
+{
+  "version": 6,
+  "configurePresets": [
+    {
+      "name": "release",
+      "displayName": "clang + full LTO, -march=native, static CRT",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/release",
+      "toolchainFile": "${sourceDir}/cmake/clang-lto.toolchain.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
+      }
+    },
+    {
+      "name": "release-portable",
+      "inherits": "release",
+      "displayName": "clang + full LTO, x86-64-v2 (runs on other machines), static CRT",
+      "binaryDir": "${sourceDir}/build/release-portable",
+      "cacheVariables": {
+        "OPUSBUILD_NATIVE": "OFF",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist-portable"
+      }
+    }
+  ],
+  "buildPresets": [
+    { "name": "release", "configurePreset": "release", "targets": ["install"] },
+    { "name": "release-portable", "configurePreset": "release-portable", "targets": ["install"] }
+  ]
+}

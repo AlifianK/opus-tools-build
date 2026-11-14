@@ -1,0 +1,7 @@
+# Upstream sources (fetch-sources.ps1) and build output
+/src/
+/build/
+/dist/
+/dist-portable/
+# Reference checkout, not part of this build
+/opus-tools_win32-build/
