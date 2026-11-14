@@ -2,29 +2,57 @@
   "version": 6,
   "configurePresets": [
     {
-      "name": "release",
-      "displayName": "clang + full LTO, -march=native, static CRT",
+      "name": "base",
+      "hidden": true,
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/release",
       "toolchainFile": "${sourceDir}/cmake/clang-lto.toolchain.cmake",
+      "cacheVariables": { "CMAKE_BUILD_TYPE": "Release" }
+    },
+    {
+      "name": "latest",
+      "inherits": "base",
+      "displayName": "latest (master of every repo), -march=native",
+      "binaryDir": "${sourceDir}/build/latest",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist"
+        "OPUSBUILD_SOURCE_DIR": "${sourceDir}/src",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/latest"
       }
     },
     {
-      "name": "release-portable",
-      "inherits": "release",
-      "displayName": "clang + full LTO, x86-64-v2 (runs on other machines), static CRT",
-      "binaryDir": "${sourceDir}/build/release-portable",
+      "name": "stable",
+      "inherits": "base",
+      "displayName": "stable (newest release tag of every repo), -march=native",
+      "binaryDir": "${sourceDir}/build/stable",
+      "cacheVariables": {
+        "OPUSBUILD_SOURCE_DIR": "${sourceDir}/src-stable",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/stable"
+      }
+    },
+    {
+      "name": "latest-portable",
+      "inherits": "latest",
+      "displayName": "latest, x86-64-v2 (runs on other machines)",
+      "binaryDir": "${sourceDir}/build/latest-portable",
       "cacheVariables": {
         "OPUSBUILD_NATIVE": "OFF",
-        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist-portable"
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/latest-portable"
+      }
+    },
+    {
+      "name": "stable-portable",
+      "inherits": "stable",
+      "displayName": "stable, x86-64-v2 (runs on other machines)",
+      "binaryDir": "${sourceDir}/build/stable-portable",
+      "cacheVariables": {
+        "OPUSBUILD_NATIVE": "OFF",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/dist/stable-portable"
       }
     }
   ],
   "buildPresets": [
-    { "name": "release", "configurePreset": "release", "targets": ["install"] },
-    { "name": "release-portable", "configurePreset": "release-portable", "targets": ["install"] }
+    { "name": "latest",          "configurePreset": "latest",          "targets": ["install"] },
+    { "name": "stable",          "configurePreset": "stable",          "targets": ["install"] },
+    { "name": "latest-portable", "configurePreset": "latest-portable", "targets": ["install"] },
+    { "name": "stable-portable", "configurePreset": "stable-portable", "targets": ["install"] }
   ]
 }

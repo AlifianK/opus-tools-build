@@ -7,7 +7,11 @@ cmake_minimum_required(VERSION 4.4)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW) # let option() in subprojects take the values set below
 project(opus-tools-build LANGUAGES C)
 
-set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/src")
+# Which source tree to build: src/ (latest: master) or src-stable/ (stable: release tags).
+# The presets set this; fetch-sources.ps1 fills both trees.
+set(OPUSBUILD_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src" CACHE PATH
+    "Folder holding ogg, opus, opusfile, flac, libopusenc and opus-tools")
+set(SRC "${OPUSBUILD_SOURCE_DIR}")
 foreach(dep ogg opus opusfile flac libopusenc opus-tools)
   if(NOT EXISTS "${SRC}/${dep}")
     message(FATAL_ERROR "Missing ${SRC}/${dep}. Run fetch-sources.ps1 first.")
@@ -47,7 +51,7 @@ set(OPUS_BUILD_TESTING OFF)
 set(OPUS_INSTALL_PKG_CONFIG_MODULE OFF)
 set(OPUS_INSTALL_CMAKE_CONFIG_MODULE OFF)
 if(NOT EXISTS "${SRC}/opus/dnn/fargan_data.c")
-  message(FATAL_ERROR "Opus DNN model data missing from src/opus/dnn. Run fetch-sources.ps1.")
+  message(FATAL_ERROR "Opus DNN model data missing from ${SRC}/opus/dnn. Run fetch-sources.ps1.")
 endif()
 add_subdirectory("${SRC}/opus" opus EXCLUDE_FROM_ALL)
 
@@ -84,7 +88,10 @@ configure_file(cmake/config/libopusenc.config.h.in gen/libopusenc/config.h @ONLY
 set(_ope "${SRC}/libopusenc/src")
 add_library(libopusenc STATIC
   ${_ope}/ogg_packer.c ${_ope}/opus_header.c ${_ope}/opusenc.c ${_ope}/picture.c
-  ${_ope}/random.c ${_ope}/resample.c ${_ope}/unicode_support.c)
+  ${_ope}/resample.c ${_ope}/unicode_support.c)
+if(EXISTS "${_ope}/random.c") # added after v0.3
+  target_sources(libopusenc PRIVATE ${_ope}/random.c)
+endif()
 target_include_directories(libopusenc
   PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/gen/libopusenc"
   PUBLIC  "${SRC}/libopusenc/include")
@@ -104,9 +111,18 @@ target_compile_definitions(opustools_common INTERFACE HAVE_CONFIG_H WIN32)
 target_sources(opustools_common INTERFACE
   ${_ot}/share/getopt.c ${_ot}/share/getopt1.c ${_ot}/src/opus_header.c ${_ot}/win32/unicode_support.c)
 
+# tagcompare.c came after v0.2; v0.2's opusenc used picture.c in its place.
+if(EXISTS "${_ot}/src/tagcompare.c")
+  set(_opusenc_extra ${_ot}/src/tagcompare.c)
+  set(_opusinfo_extra ${_ot}/src/tagcompare.c)
+else()
+  set(_opusenc_extra ${_ot}/src/picture.c)
+  set(_opusinfo_extra "")
+endif()
+
 add_executable(opusenc
-  ${_ot}/src/opusenc.c ${_ot}/src/tagcompare.c ${_ot}/src/audio-in.c ${_ot}/src/diag_range.c
-  ${_ot}/src/flac.c)
+  ${_ot}/src/opusenc.c ${_ot}/src/audio-in.c ${_ot}/src/diag_range.c ${_ot}/src/flac.c
+  ${_opusenc_extra})
 target_link_libraries(opusenc PRIVATE opustools_common libopusenc Opus::opus FLAC::FLAC Ogg::ogg)
 
 add_executable(opusdec
@@ -116,7 +132,7 @@ target_link_libraries(opusdec PRIVATE opustools_common opusurl opusfile
                                       Opus::opus Ogg::ogg winmm)
 
 add_executable(opusinfo
-  ${_ot}/src/opusinfo.c ${_ot}/src/info_opus.c ${_ot}/src/picture.c ${_ot}/src/tagcompare.c)
+  ${_ot}/src/opusinfo.c ${_ot}/src/info_opus.c ${_ot}/src/picture.c ${_opusinfo_extra})
 target_link_libraries(opusinfo PRIVATE opustools_common Ogg::ogg)
 
 install(TARGETS opusenc opusdec opusinfo RUNTIME DESTINATION bin)
